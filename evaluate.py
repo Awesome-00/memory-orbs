@@ -154,5 +154,14 @@ def main():
 if __name__ == "__main__":
     try:
         main()
+        from store import get_all_memories
+
+        print("\n=== STORED MEMORIES ===")
+        for m in get_all_memories():
+            print(
+                f"id={m[0]} status={m[5]} superseded_by={m[6]} "
+                f"type={m[2]} | {m[1]}"
+                )
+
     finally:
         _temp_dir.cleanup()

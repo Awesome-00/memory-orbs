@@ -1,7 +1,8 @@
 import ollama
 import json
-from retrieve import get_embedding
+from retrieve import get_embedding, cosine_similarity
 from store import add_memory, get_active_memories, supersede_memory
+import numpy as np
 
 
 def extract_memories(message):
@@ -135,56 +136,82 @@ def ingest_message(message):
     return memory_ids
 
 
+
 def find_superseded_memories(new_memory, active_memories):
     if not active_memories:
         return []
 
-    existing_memories = [
-        {
-            "id": row[0],
-            "text": row[1],
-            "type": row[2],
-        }
-        for row in active_memories
+    # Only consider memories of the same type.
+    same_type = [
+        row for row in active_memories
+        if row[2] == new_memory["type"] and row[4] is not None
     ]
+
+    if not same_type:
+        return []
+
+    # Shortlist semantically related memories before asking the LLM.
+    new_embedding = get_embedding(new_memory["text"])
+    candidates = []
+
+    for row in same_type:
+        old_embedding = np.frombuffer(row[4], dtype=np.float32)
+
+        if old_embedding.shape != new_embedding.shape:
+            continue
+
+        score = cosine_similarity(new_embedding, old_embedding)
+
+        if score >= 0.60:
+            candidates.append({
+                "id": row[0],
+                "text": row[1],
+                "type": row[2],
+                "similarity": round(score, 3),
+            })
+
+    if not candidates:
+        return []
 
     chat_messages = [
         {
             "role": "system",
             "content": """
-            You identify existing memories that are directly replaced
-            or contradicted by a new memory.
+            You identify memories that are directly replaced or contradicted
+            by a new memory.
 
-            Return ONLY a JSON array of the IDs of memories that are
-            genuinely superseded.
-            If no existing memory is replaced, return [].
+            Return ONLY a JSON array of integer IDs.
 
-            Do not select memories merely because they share a type
-            or topic. Preserve unrelated facts and preferences.
+            A memory may be superseded only if it describes the SAME specific,
+            changeable fact or preference and the new memory explicitly updates
+            or contradicts it.
 
-            - Only return IDs of memories that express the same
-              changeable fact or preference as the new memory.
-            - A new memory must actually contradict or explicitly
-              update an old one.
-            - Similar topics are not enough.
-            - Never select a memory just because it is about the
-              same operating system.
-            - If uncertain, return an empty array.
+            Examples:
+            - "My laptop has 16 GB RAM" -> "My laptop has 32 GB RAM":
+              supersede the old memory.
+            - "I use Python" -> "I use C++ for competitive programming":
+              do not supersede; both can be true.
+            - "I use Zorin OS" -> "My laptop has 32 GB RAM":
+              do not supersede.
+            - "I want to learn networking" -> "I am considering CCNA":
+              do not supersede.
+
+            Similarity or a shared type/topic is NOT sufficient.
+            If uncertain, return [].
             """
         },
-        {
-            "role": "user",
-            "content": f"""
-            New memory:
-            {json.dumps(new_memory)}
+                {
+                    "role": "user",
+                    "content": f"""
+        New memory:
+        {json.dumps(new_memory)}
 
-            Existing active memories:
-            {json.dumps(existing_memories)}
+        Candidate existing memories:
+        {json.dumps(candidates)}
 
-            Which existing memory IDs are superseded?
-            Return a JSON array of integer IDs.
-            """
-        }
+        Return the IDs of memories genuinely superseded by the new memory.
+        """
+                }
     ]
 
     response = ollama.chat(
@@ -196,12 +223,15 @@ def find_superseded_memories(new_memory, active_memories):
         }
     )
 
-    superseded_ids = json.loads(response.message.content)
+    try:
+        superseded_ids = json.loads(response.message.content)
+    except (json.JSONDecodeError, TypeError):
+        return []
 
     if not isinstance(superseded_ids, list):
         return []
 
-    valid_ids = {memory["id"] for memory in existing_memories}
+    valid_ids = {memory["id"] for memory in candidates}
 
     return [
         memory_id

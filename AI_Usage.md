@@ -4,3 +4,5 @@ used ai to write cosine_similarity() and help with numpy
 used chatgpt to rephrase system_prompt in ingest.py
 used claude to write memory_schema in ingest.py
 used ai for general debugging
+evaluate.py completely ai written
+api.py largely ai written
