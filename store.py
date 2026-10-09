@@ -24,7 +24,7 @@ def add_memory(
     memory_type,
     source_message,
     embedding=None #fix later
-):
+    ):
     conn = sqlite3.connect("memory.db")
     cursor = conn.cursor()
 
@@ -65,10 +65,11 @@ def get_active_memories():
     cursor = conn.cursor()
 
     cursor.execute(
-        """
-        SELECT * FROM memories
-        WHERE status = 'active';
-        """
+    """
+    SELECT id, text, type
+    FROM memories
+    WHERE status = 'active';
+    """
     )
 
     rows = cursor.fetchall()
@@ -87,6 +88,23 @@ def delete_memory(memory_id):
         WHERE id = ?;
         """,
         (memory_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+def supersede_memory(old_id, new_id):
+    conn = sqlite3.connect("memory.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        UPDATE memories
+        SET status = 'superseded',
+            superseded_by = ?
+        WHERE id = ?;
+        """,
+        (new_id, old_id)
     )
 
     conn.commit()
