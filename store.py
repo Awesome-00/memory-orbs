@@ -66,7 +66,7 @@ def get_active_memories():
 
     cursor.execute(
     """
-    SELECT id, text, type
+    SELECT *
     FROM memories
     WHERE status = 'active';
     """
@@ -90,8 +90,12 @@ def delete_memory(memory_id):
         (memory_id,)
     )
 
+    deleted = cursor.rowcount > 0
+
     conn.commit()
     conn.close()
+
+    return deleted
 
 def supersede_memory(old_id, new_id):
     conn = sqlite3.connect("memory.db")
