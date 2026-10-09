@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local databases and generated data
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
