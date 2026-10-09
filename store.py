@@ -1,7 +1,9 @@
 import sqlite3
+import os
+DB_PATH = os.environ.get("MEMORY_DB_PATH", "memory.db")
 
 def init_db():
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -25,7 +27,7 @@ def add_memory(
     source_message,
     embedding=None #fix later
     ):
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(
@@ -45,7 +47,7 @@ def add_memory(
     return memory_id
 
 def get_all_memories():
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(
@@ -61,7 +63,7 @@ def get_all_memories():
     return rows
 
 def get_active_memories():
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(
@@ -79,7 +81,7 @@ def get_active_memories():
     return rows
 
 def delete_memory(memory_id):
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(
@@ -98,7 +100,7 @@ def delete_memory(memory_id):
     return deleted
 
 def supersede_memory(old_id, new_id):
-    conn = sqlite3.connect("memory.db")
+    conn = sqlite3.connect("DB_PATH")
     cursor = conn.cursor()
 
     cursor.execute(

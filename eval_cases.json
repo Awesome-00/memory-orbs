@@ -1,0 +1,278 @@
+{
+  "description": "Memory Orbs retrieval evaluation cases. These are starter cases; inspect model outputs and adjust expectations when justified.",
+  "cases": [
+    {
+      "id": "R01",
+      "message": "I prefer C++ for competitive programming.",
+      "query": "Which language do I prefer for competitive programming?",
+      "expected_any": [
+        "C++"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R02",
+      "message": "I use Zorin OS on my main laptop.",
+      "query": "What operating system do I use on my main laptop?",
+      "expected_any": [
+        "Zorin"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R03",
+      "message": "My main laptop has 32 GB of RAM.",
+      "query": "How much RAM does my main laptop have?",
+      "expected_any": [
+        "32 GB",
+        "32GB"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R04",
+      "message": "I am a second-year computer science student.",
+      "query": "What year of college am I in?",
+      "expected_any": [
+        "second-year",
+        "second year"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R05",
+      "message": "I am learning systems programming in C and C++.",
+      "query": "Which programming languages am I using for systems programming?",
+      "expected_any": [
+        "C",
+        "C++"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R06",
+      "message": "I want to work in backend or systems engineering.",
+      "query": "What kind of software engineering career am I aiming for?",
+      "expected_any": [
+        "backend",
+        "systems"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R07",
+      "message": "I have solved more than 180 LeetCode problems in C++.",
+      "query": "Approximately how many LeetCode problems have I solved in C++?",
+      "expected_any": [
+        "180"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R08",
+      "message": "I am building a project called Memory Orbs.",
+      "query": "What project am I building?",
+      "expected_any": [
+        "Memory Orbs"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R09",
+      "message": "Memory Orbs uses SQLite to persist memories.",
+      "query": "Which database does Memory Orbs use?",
+      "expected_any": [
+        "SQLite"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R10",
+      "message": "I use Ollama to run local language models.",
+      "query": "What tool do I use to run language models locally?",
+      "expected_any": [
+        "Ollama"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R11",
+      "message": "I use nomic-embed-text for text embeddings.",
+      "query": "Which embedding model do I use?",
+      "expected_any": [
+        "nomic-embed-text"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R12",
+      "message": "I want to start contributing to open-source projects.",
+      "query": "What kind of software projects do I want to contribute to?",
+      "expected_any": [
+        "open-source",
+        "open source"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R13",
+      "message": "I am interested in learning computer networking.",
+      "query": "Which technical subject am I interested in learning?",
+      "expected_any": [
+        "networking"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R14",
+      "message": "I am considering whether CCNA is useful for a systems career.",
+      "query": "Which networking certification have I considered?",
+      "expected_any": [
+        "CCNA"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R15",
+      "message": "I want to build a Raspberry Pi project that emails weather and news.",
+      "query": "What do I want a Raspberry Pi project to email me?",
+      "expected_any": [
+        "weather",
+        "news"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R16",
+      "message": "I am interested in running a small homelab with Docker and virtual machines.",
+      "query": "What homelab technologies am I interested in?",
+      "expected_any": [
+        "Docker",
+        "virtual machines"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R17",
+      "message": "I use VS Code as my code editor.",
+      "query": "Which code editor do I use?",
+      "expected_any": [
+        "VS Code"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R18",
+      "message": "I prefer explanations that are beginner-friendly and step by step.",
+      "query": "How do I prefer technical explanations to be presented?",
+      "expected_any": [
+        "step by step",
+        "step-by-step"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R19",
+      "message": "I prefer getting hints before seeing a complete algorithm solution.",
+      "query": "When solving algorithm problems, what kind of help do I prefer first?",
+      "expected_any": [
+        "hint"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R20",
+      "message": "I am interested in cloud services such as AWS.",
+      "query": "Which cloud platform am I interested in learning?",
+      "expected_any": [
+        "AWS"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R21",
+      "message": "I want to build a private photo and video sharing platform for friends.",
+      "query": "What kind of platform do I want to build for my friends?",
+      "expected_any": [
+        "photo",
+        "video"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R22",
+      "message": "I am learning Python and NumPy for coursework.",
+      "query": "Which language and library am I learning for coursework?",
+      "expected_any": [
+        "Python",
+        "NumPy"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R23",
+      "message": "I enjoy learning about Linux and operating system internals.",
+      "query": "Which low-level computing topics interest me?",
+      "expected_any": [
+        "Linux",
+        "operating system"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R24",
+      "message": "I want to improve my networking knowledge for backend and systems work.",
+      "query": "Why do I want to learn networking?",
+      "expected_any": [
+        "backend",
+        "systems"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "R25",
+      "message": "My current project is written in Python and exposes a FastAPI service.",
+      "query": "What language and API framework does my current project use?",
+      "expected_any": [
+        "Python",
+        "FastAPI"
+      ],
+      "kind": "recall"
+    },
+    {
+      "id": "U01",
+      "message": "I have never used the Rust programming language.",
+      "query": "What is my favourite Rust framework?",
+      "expected_any": [],
+      "kind": "unknown"
+    },
+    {
+      "id": "U02",
+      "message": "I have not chosen a favourite database engine for production systems.",
+      "query": "Which production database engine did I choose as my favourite?",
+      "expected_any": [],
+      "kind": "unknown"
+    },
+    {
+      "id": "U03",
+      "message": "I have not told you my favourite football team.",
+      "query": "Which football team do I support?",
+      "expected_any": [],
+      "kind": "unknown"
+    },
+    {
+      "id": "U04",
+      "message": "I have not shared my passport number.",
+      "query": "What is my passport number?",
+      "expected_any": [],
+      "kind": "unknown"
+    },
+    {
+      "id": "U05",
+      "message": "I have not said which city I want to move to.",
+      "query": "Which city am I planning to move to?",
+      "expected_any": [],
+      "kind": "unknown"
+    }
+  ]
+}

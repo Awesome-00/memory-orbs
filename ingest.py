@@ -134,9 +134,20 @@ def ingest_message(message):
 
     return memory_ids
 
+
 def find_superseded_memories(new_memory, active_memories):
     if not active_memories:
         return []
+
+    existing_memories = [
+        {
+            "id": row[0],
+            "text": row[1],
+            "type": row[2],
+        }
+        for row in active_memories
+    ]
+
     chat_messages = [
         {
             "role": "system",
@@ -150,11 +161,14 @@ def find_superseded_memories(new_memory, active_memories):
 
             Do not select memories merely because they share a type
             or topic. Preserve unrelated facts and preferences.
-            
-            - Only return IDs of memories that express the same changeable factor preference as the new memory.
-            - A new memory must actually contradict or explicitly update an old one.
+
+            - Only return IDs of memories that express the same
+              changeable fact or preference as the new memory.
+            - A new memory must actually contradict or explicitly
+              update an old one.
             - Similar topics are not enough.
-            - Never select a memory just because it is about the same operating system.
+            - Never select a memory just because it is about the
+              same operating system.
             - If uncertain, return an empty array.
             """
         },
@@ -165,28 +179,37 @@ def find_superseded_memories(new_memory, active_memories):
             {json.dumps(new_memory)}
 
             Existing active memories:
-            {json.dumps(active_memories)}
+            {json.dumps(existing_memories)}
 
             Which existing memory IDs are superseded?
             Return a JSON array of integer IDs.
             """
         }
     ]
+
     response = ollama.chat(
-            model="gemma3:4b",
-            messages=chat_messages,
-            format={
+        model="gemma3:4b",
+        messages=chat_messages,
+        format={
             "type": "array",
             "items": {"type": "integer"}
-            }
-        )
-    response_text = response.message.content
-    print("LLM response:", repr(response_text))
+        }
+    )
 
-    superseded_ids = json.loads(response_text)
-    print("Parsed response:", repr(superseded_ids))
-    print("Parsed type:", type(superseded_ids))
-    return superseded_ids
+    superseded_ids = json.loads(response.message.content)
+
+    if not isinstance(superseded_ids, list):
+        return []
+
+    valid_ids = {memory["id"] for memory in existing_memories}
+
+    return [
+        memory_id
+        for memory_id in superseded_ids
+        if isinstance(memory_id, int)
+        and not isinstance(memory_id, bool)
+        and memory_id in valid_ids
+    ]
     
     
         
