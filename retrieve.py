@@ -24,7 +24,7 @@ def cosine_similarity(a, b):
 
 
 
-def retrieve_memories(query, top_k=5, threshold=0.55):
+def retrieve_memories(query, top_k=5, threshold=0.65):
     memories = get_active_memories()
     query_embedding = get_embedding(query)
     results = []
