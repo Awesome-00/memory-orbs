@@ -107,6 +107,11 @@ def ingest_message(message):
 
     for memory in extracted_memories:
         active_memories = get_active_memories()
+        
+        active_memories = [
+        row for row in get_active_memories()
+        if row[0] not in memory_ids
+        ]
 
         superseded_ids = find_superseded_memories(
             memory, active_memories
@@ -135,13 +140,16 @@ def ingest_message(message):
 
     return memory_ids
 
-
+SUPERSEDABLE_TYPES = {"fact", "preference"} 
 
 def find_superseded_memories(new_memory, active_memories):
     if not active_memories:
         return []
+    if new_memory["type"] not in SUPERSEDABLE_TYPES:
+        return []
+    if not active_memories:
+        return []
 
-    # Only consider memories of the same type.
     same_type = [
         row for row in active_memories
         if row[2] == new_memory["type"] and row[4] is not None
@@ -150,7 +158,6 @@ def find_superseded_memories(new_memory, active_memories):
     if not same_type:
         return []
 
-    # Shortlist semantically related memories before asking the LLM.
     new_embedding = get_embedding(new_memory["text"])
     candidates = []
 
@@ -162,7 +169,7 @@ def find_superseded_memories(new_memory, active_memories):
 
         score = cosine_similarity(new_embedding, old_embedding)
 
-        if score >= 0.60:
+        if score >= 0.75:
             candidates.append({
                 "id": row[0],
                 "text": row[1],
