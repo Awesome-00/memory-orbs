@@ -152,12 +152,28 @@ python evaluate.py
 MEMORY_EVAL_TOP_K=5 python evaluate.py
 ```
 
-| Metric | Result |
-|---|---:|
-| Recall hit rate | 22/25 (88.0%) |
-| Unknown rejection | 1/5 (20.0%) |
-| Overall accuracy | 23/30 (76.7%) |
-| Max results | 5 |
+### Threshold sweep
+
+Retrieval threshold vs. results (same 30 cases, top-k = 5):
+
+| Threshold | Recall hit rate | Unknown rejection | Overall accuracy |
+|---:|---:|---:|---:|
+| 0.55 | 23/25 (92.0%) | 1/5 (20.0%) | 24/30 (80.0%) |
+| **0.65** | **23/25 (92.0%)** | **3/5 (60.0%)** | **26/30 (86.7%)** |
+| 0.75 | 13/25 (52.0%) | 5/5 (100%) | 18/30 (60.0%) |
+
+Lowering the threshold from 0.65 to 0.55 gains no recall but lets in unrelated
+memories. Raising it to 0.75 rejects every unknown query but drops recall to 52%,
+because many correct hits score between 0.65 and 0.75. 0.65 is the default.
+Extraction by a local 4B model is non-deterministic, so differences of 1-2 cases
+between runs are noise.
+
+Recall hits are recall@5: the expected memory appears somewhere in the top 5.
+Ranking quality is not measured separately.
+
+Higher thresholds reject unknown queries more reliably but also cut off correct
+memories: many correct hits score between 0.65 and 0.75. Extraction by a local
+4B model is non-deterministic, so differences of 1-2 cases between runs are noise.
 
 Recall is solid. Rejection is the weak spot. Only 30 cases and 5 unknowns, so treat these as early local numbers, not general claims. Recall hits are phrase-matched, which isn't full semantic verification.
 
@@ -168,18 +184,23 @@ python benchmark.py
 MEMORY_BENCHMARK_RUNS=30 python benchmark.py
 ```
 
-3 warm-up queries, then timed runs over 5 fixed queries. Timing includes query embedding + similarity + ranking.
+3 warm-up queries, then 30 timed runs over 5 fixed queries. Timing covers query
+embedding, similarity over all active memories, and ranking.
 
 | Metric | Result |
 |---|---:|
-| Active memories | 22 |
+| Active memories | 46 |
 | Timed queries | 30 |
-| p50 | 19.55 ms |
-| p95 | 113.78 ms |
-| Mean | 35.93 ms |
-| Min / Max | 14.95 / 136.54 ms |
+| Median (p50) | 14.87 ms |
+| p95 | 151.15 ms |
+| Mean | 42.98 ms |
+| Min / Max | 13.08 / 206.71 ms |
 
-Warm numbers on one machine, with 22 memories. Not a cold-start or scale result. Most of the time is embedding inference, not the search.
+Warm numbers on one laptop (Intel Core Ultra, 32 GB RAM), not cold-start and not
+at scale. The median is stable, but the tail is wide: with 30 samples, p95 rests
+on about two slow runs. The spread most likely comes from embedding inference in
+Ollama (model state, scheduling), not from the similarity search, which is
+negligible at this size. This was not profiled separately.
 
 ## Project structure
 
