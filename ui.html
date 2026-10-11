@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Orbs</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --ink: #1a1d23; --muted: #6b7280;
+    --line: #e5e7eb; --accent: #3b3fd9;
+    --fact: #0e7490; --preference: #6d28d9; --project: #b45309; --event: #be185d; --goal: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14161a; --panel: #1c1f25; --ink: #e8eaed; --muted: #9aa1ab; --line: #2b2f37; --accent: #8b8ff5; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  h1 { font-size: 22px; margin: 0; }
+  #count { color: var(--muted); font-size: 14px; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+  input, select, button { font: inherit; color: inherit; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--bg); }
+  input[type=text] { flex: 1; min-width: 200px; }
+  button { background: var(--accent); color: #fff; border-color: var(--accent); cursor: pointer; }
+  button.ghost { background: var(--bg); color: var(--ink); border-color: var(--line); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tabs button { background: transparent; color: var(--muted); border-color: transparent; }
+  .tabs button[aria-pressed=true] { color: var(--ink); border-color: var(--line); background: var(--panel); }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; background: var(--bg); }
+  tr:last-child td { border-bottom: 0; }
+  tr.superseded td.text { color: var(--muted); text-decoration: line-through; }
+  .tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .t-fact { color: var(--fact); } .t-preference { color: var(--preference); } .t-project { color: var(--project); }
+  .t-event { color: var(--event); } .t-goal { color: var(--goal); }
+  .status { font-size: 13px; color: var(--muted); }
+  .score { font-variant-numeric: tabular-nums; }
+  .wrap { overflow-x: auto; }
+  .empty { background: var(--panel); border: 1px dashed var(--line); border-radius: 8px; padding: 24px; color: var(--muted); text-align: center; }
+  .err { color: #dc2626; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Memory Orbs</h1>
+    <span id="count"></span>
+  </header>
+
+  <div class="tabs">
+    <button id="tab-browse" aria-pressed="true">Browse</button>
+    <button id="tab-search" aria-pressed="false">Search</button>
+  </div>
+
+  <div id="browse">
+    <div class="bar">
+      <select id="type"><option value="">All types</option><option>fact</option><option>preference</option><option>project</option><option>event</option><option>goal</option></select>
+      <select id="status"><option value="">Active + superseded</option><option value="active">Active only</option><option value="superseded">Superseded only</option></select>
+      <input type="text" id="filter" placeholder="Filter by text">
+      <button class="ghost" id="reload">Reload</button>
+    </div>
+    <div id="browse-out" class="wrap"></div>
+  </div>
+
+  <div id="search" hidden>
+    <form class="bar" id="search-form">
+      <input type="text" id="q" placeholder="Ask something, e.g. which language do I use for competitive programming?">
+      <button type="submit">Search</button>
+    </form>
+    <div id="search-out" class="wrap"></div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let all = [];
+
+// Accept either a bare list or {memories|results: [...]}
+const toList = d => Array.isArray(d) ? d : (d.memories || d.results || []);
+const tag = t => `<span class="tag t-${esc(t)}">${esc(t)}</span>`;
+
+function show(tab) {
+  const b = tab === "browse";
+  $("browse").hidden = !b; $("search").hidden = b;
+  $("tab-browse").setAttribute("aria-pressed", b);
+  $("tab-search").setAttribute("aria-pressed", !b);
+}
+$("tab-browse").onclick = () => show("browse");
+$("tab-search").onclick = () => show("search");
+
+function renderBrowse() {
+  const t = $("type").value, s = $("status").value, f = $("filter").value.toLowerCase();
+  const rows = all.filter(m =>
+    (!t || m.type === t) && (!s || m.status === s) && (!f || String(m.text).toLowerCase().includes(f)));
+  $("count").textContent = `${rows.length} of ${all.length} memories`;
+  if (!rows.length) { $("browse-out").innerHTML = `<div class="empty">No memories match these filters.</div>`; return; }
+  $("browse-out").innerHTML = `<table><thead><tr><th>ID</th><th>Type</th><th>Memory</th><th>Status</th><th>Created</th></tr></thead><tbody>` +
+    rows.map(m => `<tr class="${m.status === "superseded" ? "superseded" : ""}">
+      <td>${esc(m.id)}</td><td>${tag(m.type)}</td><td class="text">${esc(m.text)}</td>
+      <td class="status">${esc(m.status)}${m.superseded_by != null ? ` → #${esc(m.superseded_by)}` : ""}</td>
+      <td class="status">${esc(m.created_at)}</td></tr>`).join("") + `</tbody></table>`;
+}
+
+async function load() {
+  try {
+    const r = await fetch("/memories");
+    if (!r.ok) throw new Error(`GET /memories returned ${r.status}`);
+    all = toList(await r.json());
+    renderBrowse();
+  } catch (e) {
+    $("browse-out").innerHTML = `<div class="empty err">Could not load memories. ${esc(e.message)}. Is the API running?</div>`;
+  }
+}
+["type", "status"].forEach(id => $(id).onchange = renderBrowse);
+$("filter").oninput = renderBrowse;
+$("reload").onclick = load;
+
+$("search-form").onsubmit = async e => {
+  e.preventDefault();
+  const q = $("q").value.trim();
+  if (!q) return;
+  $("search-out").innerHTML = `<div class="empty">Searching…</div>`;
+  try {
+    const r = await fetch("/recall", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: q }) });
+    if (!r.ok) throw new Error(`POST /recall returned ${r.status}`);
+    const rows = toList(await r.json());
+    if (!rows.length) {
+      $("search-out").innerHTML = `<div class="empty">No memory passed the similarity threshold. The system has nothing relevant for this query.</div>`;
+      return;
+    }
+    $("search-out").innerHTML = `<table><thead><tr><th>Score</th><th>Type</th><th>Memory</th></tr></thead><tbody>` +
+      rows.map(m => `<tr><td class="score">${m.score != null ? Number(m.score).toFixed(3) : "–"}</td><td>${tag(m.type)}</td><td>${esc(m.text)}</td></tr>`).join("") + `</tbody></table>`;
+  } catch (err) {
+    $("search-out").innerHTML = `<div class="empty err">Search failed. ${esc(err.message)}</div>`;
+  }
+};
+
+load();
+</script>
+</body>
+</html>

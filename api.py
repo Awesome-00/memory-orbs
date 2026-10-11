@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
+from pathlib import Path
+from fastapi.responses import FileResponse
 from ingest import ingest_message
 from retrieve import retrieve_memories
 from store import init_db, get_all_memories, delete_memory
@@ -57,3 +58,7 @@ def remove_memory(memory_id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Memory not found")
     return {"deleted_id": memory_id}
+
+@app.get("/", include_in_schema=False)
+def ui():
+    return FileResponse(Path(__file__).parent / "ui.html")
